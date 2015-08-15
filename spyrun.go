@@ -85,7 +85,7 @@ func (s *spyrun) run(tomlpath string) error {
 	for {
 		spyst := <-ch
 		log.Printf("[%s] is modified !\n", spyst.filePath)
-		go s.executeCommand(spyst.command)
+		go s.executeCommand(spyst)
 	}
 
 }
@@ -191,15 +191,17 @@ func (s *spyrun) spyFiles(ch chan *spyst) {
 	}
 }
 
-func (s *spyrun) executeCommand(command string) error {
+func (s *spyrun) executeCommand(spy *spyst) error {
 	var err error
+	spy.mu.Lock()
+	defer spy.mu.Unlock()
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/c", command)
+		cmd = exec.Command("cmd", "/c", spy.command)
 	} else {
-		cmd = exec.Command("sh", "-c", command)
+		cmd = exec.Command("sh", "-c", spy.command)
 	}
-	log.Printf("Execute command. [%s]", command)
+	log.Printf("Execute command. [%s]", spy.command)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
