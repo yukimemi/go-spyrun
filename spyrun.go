@@ -1,6 +1,6 @@
 package spyrun
 
-import (
+import ( // {{{
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,58 +13,58 @@ import (
 	"time"
 
 	"github.com/naoina/toml"
-)
+) // }}}
 
-const (
+const ( // {{{
 	// SpyRunFile convert to target file.
 	SpyRunFile = "\\$SPYRUN_FILE"
-)
+) // }}}
 
 /**
  * Toml config.
  */
-type tomlConfig struct {
+type tomlConfig struct { // {{{
 	Spyconf struct {
 		Sleep string `toml:"sleep"`
 	}
 	SpyTables map[string]spyTable `toml:"spys"`
-}
+} // }}}
 
-type spyTable struct {
+type spyTable struct { // {{{
 	File    string `toml:"file"`
 	Command string `toml:"command"`
-}
+} // }}}
 
 /**
  * Spyrun config.
  */
 type spyMap map[string][]*spyst
 
-type spyst struct {
+type spyst struct { // {{{
 	filePath   string
 	command    string
 	modifyTime time.Time
 	mu         *sync.Mutex
-}
+} // }}}
 
-type spyrun struct {
+type spyrun struct { // {{{
 	conf tomlConfig
 	spym spyMap
-}
+} // }}}
 
 // New Create and return *spyrun.
-func New() *spyrun {
+func New() *spyrun { // {{{
 	s := new(spyrun)
 	s.spym = make(spyMap)
 	return s
-}
+} // }}}
 
 // Run run spyrun.
-func Run(tomlpath string) error {
+func Run(tomlpath string) error { // {{{
 	return New().run(tomlpath)
-}
+} // }}}
 
-func (s *spyrun) run(tomlpath string) error {
+func (s *spyrun) run(tomlpath string) error { // {{{
 	var err error
 
 	err = s.loadToml(tomlpath)
@@ -88,7 +88,7 @@ func (s *spyrun) run(tomlpath string) error {
 		go s.executeCommand(spyst)
 	}
 
-}
+} // }}}
 
 func (s *spyrun) convertSpyVar(file, command string) (string, error) { // {{{
 	var err error
@@ -102,7 +102,7 @@ func (s *spyrun) convertSpyVar(file, command string) (string, error) { // {{{
 	return command, err
 } // }}}
 
-func (s *spyrun) createSpyMapFromSpyTables() error {
+func (s *spyrun) createSpyMapFromSpyTables() error { // {{{
 	var err error
 
 	for k, v := range s.conf.SpyTables {
@@ -127,12 +127,12 @@ func (s *spyrun) createSpyMapFromSpyTables() error {
 				os.Exit(1)
 			}
 			spyst.mu = new(sync.Mutex)
+			log.Printf("%s: {file: [%s], command: [%s]}\n", k, spyst.filePath, spyst.command)
 			s.spym[k] = append(s.spym[k], spyst)
 		}
 	}
-
 	return err
-}
+} // }}}
 
 func (s *spyrun) loadToml(tomlpath string) error { // {{{
 	var err error
@@ -160,7 +160,7 @@ func (s *spyrun) loadToml(tomlpath string) error { // {{{
 	return err
 } // }}}
 
-func (s *spyrun) spyFiles(ch chan *spyst) {
+func (s *spyrun) spyFiles(ch chan *spyst) { // {{{
 	var err error
 	var sleep time.Duration
 	if s.conf.Spyconf.Sleep != "" {
@@ -189,9 +189,9 @@ func (s *spyrun) spyFiles(ch chan *spyst) {
 		}
 		time.Sleep(sleep)
 	}
-}
+} // }}}
 
-func (s *spyrun) executeCommand(spy *spyst) error {
+func (s *spyrun) executeCommand(spy *spyst) error { // {{{
 	var err error
 	spy.mu.Lock()
 	defer spy.mu.Unlock()
@@ -210,4 +210,4 @@ func (s *spyrun) executeCommand(spy *spyst) error {
 	}
 
 	return err
-}
+} // }}}
