@@ -1,0 +1,15 @@
+[spyconf]
+sleep = "100ms"
+
+[spys.first]
+file = "./spy.toml"
+command = "cat $SPYRUN_FILE"
+
+[spys.second]
+file = "*.go"
+command = "cat $SPYRUN_FILE"
+
+[spys.third]
+file = "**/*"
+command = "ls -al $SPYRUN_FILE"
+
