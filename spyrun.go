@@ -179,8 +179,8 @@ func (s *spyrun) spyFiles(ch chan *spyst) { // {{{
 				fi, err := os.Stat(spyst.filePath)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Failed to get FileInfo. %s, [%s]", spyst.filePath, err.Error())
-					spyst.modifyTime = fi.ModTime()
 					ch <- spyst
+					// todo remove file from s.spym
 				} else if fi.ModTime() != spyst.modifyTime {
 					spyst.modifyTime = fi.ModTime()
 					ch <- spyst
